@@ -1,6 +1,7 @@
 import numpy as np
 from co_utils import *
 import scipy.fftpack as spfft
+from image_process import display_img
 
 def fourier_compressive_sensing(img,mask):
     '''
@@ -9,6 +10,7 @@ def fourier_compressive_sensing(img,mask):
     mask - h x w x 1, 0 for good pixel, 1 for bad pixel
     return restored img
     '''
+    print("begin  fourier")
     h,w,c = img.shape
     
     '''
@@ -17,11 +19,24 @@ def fourier_compressive_sensing(img,mask):
     we have Y'=AX, Y'=Y at good pixels, while minimizing l1(X)
     '''
     mask_flat = mask[:,:,0].T.flatten() # stack the cols into a vector
+    mask_c = mask[:,:,0] # stack the cols into a vector
     idx = (1.-mask_flat).nonzero() # idx for good pixels
     
+    # create dct matrix operator 
+    dctw = spfft.dct(np.identity(w), norm='ortho', axis=0)
+    dcth = spfft.dct(np.identity(h), norm='ortho', axis=0)
+
     # create inverse dct matrix operator 
-    idctw = spfft.idct(np.identity(w), norm='ortho', axis=0) # W
-    idcth = spfft.idct(np.identity(h), norm='ortho', axis=0) # H
+    W = spfft.idct(np.identity(w), norm='ortho', axis=0) # W
+    H = spfft.idct(np.identity(h), norm='ortho', axis=0) # H
+
+    '''
+    fr = np.matmul(dcth,np.matmul(img[:,:,0],dctw.T))
+    r = np.matmul(H,np.matmul(fr,W.T))
+    display_img(img[:,:,0])
+    display_img(fr)
+    display_img(r)
+    '''
 
     '''
     We have Y'=H((WX^T)^T)=HXW^T. This is equal to A(flat(X)) where A=kron(W,H). But A is too large, thus
@@ -31,22 +46,22 @@ def fourier_compressive_sensing(img,mask):
 
     # variable for calculating the gradient. See explanation in next comment block.
     print("get hw")
-    HW = np.outer(idcth.T,idctw)
+    #HW = np.outer(idcth.T,idctw)
     print("got outer")
-    print(idcth.flatten().reshape(-1,1).shape)
-    #HW = np.matmul(idcth.flatten().reshape(-1,1),idctw.flatten().reshape(1,-1)).reshape(h,h,w,w)
+    print(H.flatten().reshape(-1,1).shape)
+    HW = np.matmul(H.flatten().reshape(-1,1),W.flatten().reshape(1,-1)).reshape(h,h,w,w)
     print("got hw")
-    #HW = np.transpose(HW, (1,2,0,3)).reshape(h,w,h*w)
+    HW = np.transpose(HW, (1,2,0,3)).reshape(h,w,h*w)
 
-    l1_lambda = 10.
-    lr = 10.
+    l1_lambda = 0.001
+    lr = 1.
 
     # we process channel by channel
     img_restored = np.zeros_like(img)
     for i in range(c):
         img_c = img[:,:,i]
-        img_flat = img_c.T.flatten()
-        img_sampled = img_flat[idx]
+        img_sampled = img_c*(1-mask_c) 
+        img_s_f = np.matmul(dcth,np.matmul(img_sampled,dctw.T)) # damaged img in fourier domain
 
         '''
         since the feasible set constraint is on y not on X, it is hard to compute the feasible set for X, thus
@@ -62,14 +77,21 @@ def fourier_compressive_sensing(img,mask):
         '''
 
         def grad(x):
-            diff = np.matmul(H,np.matmul(x,W.T))
+            print("get diff")
+            diff = np.matmul(H,np.matmul(x,W.T))-img_c
             diff_sampled = diff*(1-mask[:,:,0])
             diff_flat = diff_sampled.reshape(1,1,h*w)
-            gradient = np.sum(diff_flat*HW,axis=-1) # h x w
+            print("got diff")
+            print(diff_flat.shape)
+            prod = diff_flat*HW
+            print("got prod",prod.shape)
+            gradient = np.sum(prod,axis=-1) # h x w
+            print("got sum",gradient.shape)
+            return gradient
 
         prox = lambda x : (x>0).astype(float)*np.maximum(0.,np.abs(x)-lr*l1_lambda) # proximal gradient of l1
         
-        x_best = fista(np.zeros((h,w)),grad,prox,lr=lr) # best representation in the spectral domain
+        x_best = fista(img_s_f,grad,prox,lr=lr) # best representation in the spectral domain
         img_restored[:,:,i]  = np.matmul(H,np.matmul(x_best,W.T)) # h x w
     return img_restored*mask+img*(1-mask)
 

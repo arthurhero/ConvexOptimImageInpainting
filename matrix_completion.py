@@ -13,6 +13,7 @@ def matrix_completion(img,mask):
     mask - h x w x 1, 0 for good pixel, 1 for bad pixel
     return restored img
     '''
+    print("begin matrix!")
     h,w,c = img.shape
 
     '''
@@ -30,7 +31,7 @@ def matrix_completion(img,mask):
     for i in range(c):
         img_c = img[:,:,i]
         proj = lambda x : x*mask_c + img_c*(1-mask_c)
-        img_restored[:,:,i] = fista(img_c.copy(),grad,prox,proj) # project to feasible set
+        img_restored[:,:,i] = fista(img_c*(1-mask_c),grad,prox,proj) # project to feasible set
 
     return img_restored*mask+img*(1-mask)  # though in this case, directly return img_restored should be fine
         
