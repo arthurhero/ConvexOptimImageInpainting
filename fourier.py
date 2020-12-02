@@ -45,16 +45,23 @@ def fourier_compressive_sensing(img,mask):
     '''
 
     # variable for calculating the gradient. See explanation in next comment block.
+    '''
     print("get hw")
     #HW = np.outer(idcth.T,idctw)
     print("got outer")
     print(H.flatten().reshape(-1,1).shape)
-    HW = np.matmul(H.flatten().reshape(-1,1),W.flatten().reshape(1,-1)).reshape(h,h,w,w)
+    HW = np.matmul(H.flatten().reshape(-1,1),W.flatten().reshape(1,-1))
     print("got hw")
-    HW = np.transpose(HW, (1,2,0,3)).reshape(h,w,h*w)
+    HW = HW.reshape(h,h,w*w).transpose(0,2,1).reshape(h,w,w,h).transpose(0,1,3,2).reshape(h*w,h,w).transpose(1,2,0)
+    print(HW.shape)
+    print("diff",HW[:,:,0]-np.matmul(H[0].reshape(h,1),W[0].reshape(1,w)))
+    print("diff",HW[:,:,15]-np.matmul(H[0].reshape(h,1),W[15].reshape(1,w)))
+    print("diff",HW[:,:,h+30]-np.matmul(H[1].reshape(h,1),W[30].reshape(1,w)))
+    '''
 
-    l1_lambda = 0.001
-    lr = 1.
+
+    l1_lambda = 0.01
+    lr = .1
 
     # we process channel by channel
     img_restored = np.zeros_like(img)
@@ -77,9 +84,16 @@ def fourier_compressive_sensing(img,mask):
         '''
 
         def grad(x):
+            '''
+            grad of |S(Ax)-S(y)|^2: 2*A^T(AX-y)
+            '''
             print("get diff")
-            diff = np.matmul(H,np.matmul(x,W.T))-img_c
-            diff_sampled = diff*(1-mask[:,:,0])
+            diff = np.matmul(H,np.matmul(x,W.T))-img_sampled # AX-y
+            print("diff",diff[0][0])
+            diff_sampled = diff*(1-mask_c) # S(AX-y)
+            gradient = 2*np.matmul(dcth,np.matmul(diff_sampled,dctw.T)) # 2*A^T(AX-y) since dct is orthogonal
+            print("grad",gradient[0][0])
+            '''
             diff_flat = diff_sampled.reshape(1,1,h*w)
             print("got diff")
             print(diff_flat.shape)
@@ -87,12 +101,15 @@ def fourier_compressive_sensing(img,mask):
             print("got prod",prod.shape)
             gradient = np.sum(prod,axis=-1) # h x w
             print("got sum",gradient.shape)
+            '''
             return gradient
 
-        prox = lambda x : (x>0).astype(float)*np.maximum(0.,np.abs(x)-lr*l1_lambda) # proximal gradient of l1
+        prox = lambda x : 2*((x>0).astype(float)-0.5)*np.maximum(0.,np.abs(x)-lr*l1_lambda) # proximal gradient of l1
         
-        x_best = fista(img_s_f,grad,prox,lr=lr) # best representation in the spectral domain
+        #x_best = fista(img_s_f,grad,prox,lr=lr) # best representation in the spectral domain
+        x_best = fista(np.zeros_like(img_c),grad,prox,lr=lr) # best representation in the spectral domain
         img_restored[:,:,i]  = np.matmul(H,np.matmul(x_best,W.T)) # h x w
+        display_img(img_restored)
     return img_restored*mask+img*(1-mask)
 
 
