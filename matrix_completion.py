@@ -13,7 +13,7 @@ def matrix_completion(img,mask):
     mask - h x w x 1, 0 for good pixel, 1 for bad pixel
     return restored img
     '''
-    print("begin matrix!")
+    #print("begin matrix!")
     h,w,c = img.shape
 
     '''

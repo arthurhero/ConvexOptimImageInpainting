@@ -10,7 +10,7 @@ def fourier_compressive_sensing(img,mask):
     mask - h x w x 1, 0 for good pixel, 1 for bad pixel
     return restored img
     '''
-    print("begin  fourier")
+    #print("begin fourier")
     h,w,c = img.shape
     
     '''
@@ -87,12 +87,9 @@ def fourier_compressive_sensing(img,mask):
             '''
             grad of |S(Ax)-S(y)|^2: 2*A^T(AX-y)
             '''
-            print("get diff")
             diff = np.matmul(H,np.matmul(x,W.T))-img_sampled # AX-y
-            print("diff",diff[0][0])
             diff_sampled = diff*(1-mask_c) # S(AX-y)
             gradient = 2*np.matmul(dcth,np.matmul(diff_sampled,dctw.T)) # 2*A^T(AX-y) since dct is orthogonal
-            print("grad",gradient[0][0])
             '''
             diff_flat = diff_sampled.reshape(1,1,h*w)
             print("got diff")
@@ -109,7 +106,7 @@ def fourier_compressive_sensing(img,mask):
         #x_best = fista(img_s_f,grad,prox,lr=lr) # best representation in the spectral domain
         x_best = fista(np.zeros_like(img_c),grad,prox,lr=lr) # best representation in the spectral domain
         img_restored[:,:,i]  = np.matmul(H,np.matmul(x_best,W.T)) # h x w
-        display_img(img_restored)
+        #display_img(img_restored)
     return img_restored*mask+img*(1-mask)
 
 
