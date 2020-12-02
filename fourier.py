@@ -60,7 +60,7 @@ def fourier_compressive_sensing(img,mask):
     '''
 
 
-    l1_lambda = 0.01
+    l1_lambda = .03
     lr = .1
 
     # we process channel by channel
