@@ -7,14 +7,14 @@ import numpy as np
 if __name__ == '__main__':
     # experiment code 
 
+    '''
     percents = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9] # percentage of missing pixels
     num_holes = [2,5,10,50,100,500,1000,5000,10000] # number of square holes
     num_img = 30
     '''
-    percents = [0.5] # percentage of missing pixels
+    percents = [0.9] # percentage of missing pixels
     num_holes = [1000] # number of square holes
     num_img = 1
-    '''
 
     for p in range(len(percents)):
         for nh in range(len(num_holes)):

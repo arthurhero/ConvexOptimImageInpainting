@@ -1,6 +1,6 @@
 import numpy as np
 
-def fista(x,grad,prox,proj = None, lr = 1.,delta = 0.0001):
+def fista(x,grad,prox,proj = None, lr = 1.,delta = 0.001):
     '''
     convex optim algorithm using proximal gradient and Nesterov's trick
     x - variable to be optimized (optim solution)
