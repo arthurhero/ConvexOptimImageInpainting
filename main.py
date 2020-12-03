@@ -20,6 +20,8 @@ if __name__ == '__main__':
         for nh in range(len(num_holes)):
             percent = percents[p]
             num_hole = num_holes[nh]
+            print("pencent:",percent)
+            print("num_hole:",num_hole)
             imgs, masks = load_dataset('data',num_img,percent,num_hole)
             mc_l1 = 0.0
             fo_l1 = 0.0 # l1 difference between restored and orig img
@@ -39,8 +41,6 @@ if __name__ == '__main__':
                 fo_l1 += np.sum(np.abs(fo_restored_img-img))/(np.sum(mask)) # take average l1 diff
             mc_l1 /= len(imgs)
             fo_l1 /= len(imgs)
-            print("pencent:",percent)
-            print("num_hole:",num_hole)
             print("mc_l1:",mc_l1)
             print("fo_l1:",fo_l1)
 
