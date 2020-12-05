@@ -19,7 +19,9 @@ Image inpainting using matrix completion and compressive sensing in fourier doma
 
 ## Demo
 Image 4 with p:0.1, nh:2 (masked, mc, fo)
+
 <img src="demo/3_0_0masked.jpg" alt="3_0_0masked" width="200" height="200" /> <img src="demo/3_0_0mc.jpg" alt="3_0_0mc" width="200" height="200" /> <img src="demo/3_0_0fo.jpg" alt="3_0_0fo" width="200" height="200" />
 
 Image 4 with p:0.9, nh:10000 (masked, mc, fo)
+
 <img src="demo/3_1_1masked.jpg" alt="3_1_1masked" width="200" height="200" /> <img src="demo/3_1_1mc.jpg" alt="3_1_1mc" width="200" height="200" /> <img src="demo/3_1_1fo.jpg" alt="3_1_1fo" width="200" height="200" />
