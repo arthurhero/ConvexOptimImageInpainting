@@ -45,7 +45,7 @@ def fourier_compressive_sensing(img,mask):
     though we calculate using A, we program with H and W.
     '''
 
-    l1_lambda = .03
+    l1_lambda = .003
     lr = .1 # learning rate
 
     # we process channel by channel
@@ -72,7 +72,7 @@ def fourier_compressive_sensing(img,mask):
             gradient = 2*np.matmul(dcth,np.matmul(diff_sampled,dctw.T)) # 2*A^T(AX-y) since dct is orthogonal
             return gradient
 
-        prox = lambda x : 2*((x>0).astype(float)-0.5)*np.maximum(0.,np.abs(x)-lr*l1_lambda) # proximal gradient of l1
+        prox = lambda x : 2*((x>0).astype(float)-0.5)*np.maximum(0.,np.abs(x)-l1_lambda) # proximal gradient of l1
         
         x_best = fista(np.zeros_like(img_c),grad,prox,lr=lr) # best representation in the spectral domain
         img_restored[:,:,i]  = np.matmul(H,np.matmul(x_best,W.T)) # h x w

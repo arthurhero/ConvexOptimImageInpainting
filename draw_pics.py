@@ -42,7 +42,7 @@ def read_file_and_plot(filename):
             percent = line.split(':')[1].strip()
             percents.add(percent)
         if "num_hole" in line:
-            num_hole = line.split(':')[1].strip()
+            num_hole = int(line.split(':')[1])
             num_holes.add(num_hole)
         if "mc_l1" in line:
             mc_l1 = float(line.split(':')[1])
@@ -50,15 +50,22 @@ def read_file_and_plot(filename):
         if "fo_l1" in line:
             fo_l1 = float(line.split(':')[1])
             fo_l1_dict[(percent,num_hole)] = fo_l1
+
+    percents = list(percents)
+    num_holes = list(num_holes)
+    percents.sort()
+    num_holes.sort()
     for p in percents:
+        print("p",p)
         xs = list()
         ys = list()
         zs = list()
         for nh in num_holes:
-            xs.append(nh)
+            print("nh",nh)
+            xs.append(np.log(nh))
             ys.append(mc_l1_dict[(p,nh)])
             zs.append(fo_l1_dict[(p,nh)])
-        draw_line_plot(xs,ys,"l1 Diff vs number of holes under "+p+" pixel loss","p"+p+".jpg",'Number of Square Holes',"L1 Diff (per pixel avg)",zs,'Matrix Completion','Cosine Compressive Sensing')
+        draw_line_plot(xs,ys,"l1 Diff vs number of holes under "+p+" pixel loss","logp"+p+".jpg",'Number of Square Holes (in log scale)',"L1 Diff (per pixel avg)",zs,'Matrix Completion','Cosine Compressive Sensing')
 
 
 if __name__ == '__main__':
